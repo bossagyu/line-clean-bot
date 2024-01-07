@@ -1,7 +1,7 @@
 import os
 import json
 
-from lib.s3_clien import S3client
+from lib.s3_client import S3client
 from lib.line import Line
 
 CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
