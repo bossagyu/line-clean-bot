@@ -3,6 +3,7 @@ import json
 
 from lib.s3_client import S3client
 from lib.line import Line
+from lib.clean_task import CleanTask
 
 CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
 USER_ID = os.getenv('USER_ID')
@@ -22,7 +23,22 @@ def push_message_periodically(event, context):
     # オブジェクトごとにLineに送信
     for obj_list in obj_lists:
         obj_body = s3client.get_object_body(obj_list.key)
+        # タスクを取得しメッセージを生成
+        clean_task = CleanTask(obj_body)
+        line_message = __make_periodically_push_message(clean_task.get_todo_tasks())
+        # メッセージを送信
         user_id = obj_list.key.split('.json')[0]
         line = Line(CHANNEL_ACCESS_TOKEN, user_id)
-        message_json = json.loads(obj_body)
-        line.push_message(message_json['message'])
+        line.push_message(line_message)
+
+
+def __make_periodically_push_message(tasks):
+    """Make periodically push message
+    :param tasks: tasks
+    :return: periodically push message
+    """
+    message = ''
+    message += '今日のタスクは以下の通りです。\n'
+    for task in tasks:
+        message += task['task_name'] + '\n'
+    return message
