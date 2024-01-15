@@ -32,6 +32,26 @@ def push_message_periodically(event, context):
         line.push_message(line_message)
 
 
+def process_user_message(event, context):
+    print(CHANNEL_ACCESS_TOKEN)
+    print(USER_ID)
+    print(event)
+    print(context)
+
+    body = json.loads(event.get('body'))
+    print(body)
+
+    user_id = body['events'][0]['source']['userId']
+    message = body['events'][0]['message']['text']
+
+    print(user_id)
+    print(message)
+
+    line = Line(CHANNEL_ACCESS_TOKEN, user_id)
+    line.push_message(message)
+
+
+
 def __make_periodically_push_message(tasks):
     """Make periodically push message
     :param tasks: tasks
