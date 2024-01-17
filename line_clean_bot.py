@@ -4,6 +4,7 @@ import json
 from lib.s3_client import S3client
 from lib.line import Line
 from lib.clean_task import CleanTask
+from lib.return_message import ReturnMessage
 
 CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
 USER_ID = os.getenv('USER_ID')
@@ -23,11 +24,13 @@ def push_message_periodically(event, context):
     # オブジェクトごとにLineに送信
     for obj_list in obj_lists:
         obj_body = s3client.get_object_body(obj_list.key)
+        user_id = obj_list.key.split('.json')[0]
+
         # タスクを取得しメッセージを生成
         clean_task = CleanTask(obj_body)
-        line_message = __make_periodically_push_message(clean_task.get_todo_tasks())
+        return_message = ReturnMessage(clean_task, user_id)
+        line_message = return_message.get_periodically_push_message()
         # メッセージを送信
-        user_id = obj_list.key.split('.json')[0]
         line = Line(CHANNEL_ACCESS_TOKEN, user_id)
         line.push_message(line_message)
 
@@ -52,13 +55,16 @@ def process_user_message(event, context):
     s3client = S3client(BUCKET_NAME)
     obj_key = user_id + '.json'
     obj_body = s3client.get_object_body(obj_key)
+    clean_task_obj = CleanTask(obj_body)
 
-    if message == 'タスク確認':
-        # タスクを取得しメッセージを生成
-        clean_task = CleanTask(obj_body)
-        line_message = __make_periodically_push_message(clean_task.get_all_tasks())
-        line = Line(CHANNEL_ACCESS_TOKEN, user_id)
-        line.push_message(line_message)
+    return_message_obj = ReturnMessage(clean_task_obj, user_id)
+    line_return_message = return_message_obj.get_return_message(message)
+
+    if line_return_message == "":
+        return
+
+    line = Line(CHANNEL_ACCESS_TOKEN, user_id)
+    line.push_message(line_return_message)
 
 
 def __make_periodically_push_message(tasks):
