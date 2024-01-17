@@ -29,3 +29,9 @@ class CleanTask(object):
             if self.__evaluate_cleanup_timing(task):
                 todo_tasks.append(task)
         return todo_tasks
+
+    def get_all_tasks(self):
+        """Get all task
+        :return: list of exception tasks
+        """
+        return self.tasks

@@ -34,22 +34,31 @@ def push_message_periodically(event, context):
 
 def process_user_message(event, context):
     print(CHANNEL_ACCESS_TOKEN)
-    print(USER_ID)
     print(event)
     print(context)
 
+    # LINEのメッセージを取得
     body = json.loads(event.get('body'))
     print(body)
 
+    # uidとメッセージを取得
     user_id = body['events'][0]['source']['userId']
     message = body['events'][0]['message']['text']
 
     print(user_id)
     print(message)
 
-    line = Line(CHANNEL_ACCESS_TOKEN, user_id)
-    line.push_message(message)
+    # s3からデータを取得
+    s3client = S3client(BUCKET_NAME)
+    obj_key = user_id + '.json'
+    obj_body = s3client.get_object_body(obj_key)
 
+    if message == 'タスク確認':
+        # タスクを取得しメッセージを生成
+        clean_task = CleanTask(obj_body)
+        line_message = __make_periodically_push_message(clean_task.get_all_tasks())
+        line = Line(CHANNEL_ACCESS_TOKEN, user_id)
+        line.push_message(line_message)
 
 
 def __make_periodically_push_message(tasks):
@@ -62,3 +71,5 @@ def __make_periodically_push_message(tasks):
     for task in tasks:
         message += task['task_name'] + '\n'
     return message
+
+
