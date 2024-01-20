@@ -4,7 +4,7 @@ import json
 from lib.s3_client import S3client
 from lib.line import Line
 from lib.clean_task import CleanTask
-from lib.return_message import ReturnMessage
+from lib.message import Message
 
 CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
 USER_ID = os.getenv('USER_ID')
@@ -28,7 +28,7 @@ def push_message_periodically(event, context):
 
         # タスクを取得しメッセージを生成
         clean_task = CleanTask(obj_body)
-        return_message = ReturnMessage(clean_task, user_id)
+        return_message = Message(clean_task, user_id)
         line_message = return_message.get_periodically_push_message()
         # メッセージを送信
         line = Line(CHANNEL_ACCESS_TOKEN, user_id)
@@ -57,9 +57,11 @@ def process_user_message(event, context):
     obj_body = s3client.get_object_body(obj_key)
     clean_task_obj = CleanTask(obj_body)
 
-    return_message_obj = ReturnMessage(clean_task_obj, user_id)
-    line_return_message = return_message_obj.get_return_message(message)
+    # メッセージを処理
+    message_obj = Message(clean_task_obj, user_id)
+    line_return_message = message_obj.get_return_message(message)
 
+    # メッセージがからの場合は処理を終了
     if line_return_message == "":
         return
 

@@ -1,4 +1,4 @@
-class ReturnMessage:
+class Message:
     def __init__(self, clean_task, user_id):
         """Initiate message class
         :param clean_task: clean task
