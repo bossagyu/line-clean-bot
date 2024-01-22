@@ -31,3 +31,10 @@ class S3client:
         :param objects: list of objects
         """
         objects.delete()
+
+    def update_object(self, keyname, body):
+        """Update object
+        :param keyname: object key name
+        :param body: object body
+        """
+        self.bucket.Object(keyname).put(Body=body)

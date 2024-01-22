@@ -3,13 +3,18 @@ import json
 
 s3 = boto3.resource('s3')
 bucket = s3.Bucket('bossagyu-lambda-line-clean-bot')
-object = bucket.Object('s3_test_file.json')
+object = bucket.Object('U41d88cec660cef7591e767296e44df3b.json')
 response = object.get()
 body = response['Body'].read().decode('utf-8')
-str = '{"message": "s3のデータですこんにちは。"}'
-
-print(str)
 print(body)
-json = json.loads(body)
-print(json)
-print(json['message'])
+json_obj = json.loads(body)
+print(json_obj)
+
+json_obj['tasks'][0]['duration'] = 4
+print(json_obj)
+
+
+bucket.Object('U41d88cec660cef7591e767296e44df3b.json').put(Body=json.dumps(json_obj))
+response2 = object.get()
+print(response2['Body'].read().decode('utf-8'))
+

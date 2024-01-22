@@ -58,13 +58,14 @@ def process_user_message(event, context):
     clean_task_obj = CleanTask(obj_body)
 
     # メッセージを処理
-    message_obj = Message(clean_task_obj, user_id)
+    message_obj = Message(clean_task_obj, s3client, user_id)
     line_return_message = message_obj.get_return_message(message)
 
     # メッセージがからの場合は処理を終了
     if line_return_message == "":
         return
 
+    # メッセージを送信
     line = Line(CHANNEL_ACCESS_TOKEN, user_id)
     line.push_message(line_return_message)
 

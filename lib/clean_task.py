@@ -35,3 +35,20 @@ class CleanTask(object):
         :return: list of exception tasks
         """
         return self.tasks
+
+    def update_task_updated_at(self, task_name):
+        """Update task status
+        :param task_name: task name
+        """
+        for task in self.tasks:
+            if task['task_name'] == task_name:
+                task['updated_at'] = datetime.now().strftime(self.date_format)
+                break
+
+    def get_json(self):
+        """Get json string
+        :return: json string
+        """
+        task_data = {'tasks': self.tasks}
+        return json.dumps(task_data)
+
