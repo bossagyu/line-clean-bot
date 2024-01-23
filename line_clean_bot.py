@@ -58,8 +58,8 @@ def process_user_message(event, context):
     clean_task_obj = CleanTask(obj_body)
 
     # メッセージを処理
-    message_obj = Message(clean_task_obj, s3client, user_id)
-    line_return_message = message_obj.get_return_message(message)
+    message_obj = Message(clean_task_obj, user_id)
+    line_return_message = message_obj.get_return_message(message, s3client)
 
     # メッセージがからの場合は処理を終了
     if line_return_message == "":
@@ -68,17 +68,4 @@ def process_user_message(event, context):
     # メッセージを送信
     line = Line(CHANNEL_ACCESS_TOKEN, user_id)
     line.push_message(line_return_message)
-
-
-def __make_periodically_push_message(tasks):
-    """Make periodically push message
-    :param tasks: tasks
-    :return: periodically push message
-    """
-    message = ''
-    message += '今日のタスクは以下の通りです。\n'
-    for task in tasks:
-        message += task['task_name'] + '\n'
-    return message
-
 

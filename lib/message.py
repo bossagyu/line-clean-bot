@@ -2,18 +2,18 @@ import re
 from lib.s3_client import S3client
 
 class Message:
-    def __init__(self, clean_task, s3client, user_id):
+    def __init__(self, clean_task, user_id):
         """Initiate message class
         :param clean_task: clean task
         :param user_id: user id
         """
         self.clean_task = clean_task
         self.user_id = user_id
-        self.s3client = s3client
 
-    def get_return_message(self, message):
+    def get_return_message(self, message, s3client):
         """LINEで受け取ったメッセージから処理する内容を判別し、メッセージを返却する関数
         :param message: message
+        :param s3client: s3 client
         :return: return message
         """
         # 操作とタスク名を取得
@@ -32,7 +32,7 @@ class Message:
         if task_operation == '完了':
             self.clean_task.update_task_updated_at(task_name)
             print(self.clean_task.get_json())
-            self.s3client.update_object(self.user_id + ".json", self.clean_task.get_json())
+            s3client.update_object(self.user_id + ".json", self.clean_task.get_json())
             message = f"{task_name}を完了しました。\n"
             return message + self.get_periodically_push_message()
 
