@@ -1,6 +1,5 @@
 import json
-from datetime import datetime
-import pytz
+from datetime import datetime, timedelta
 
 
 class CleanTask(object):
@@ -8,7 +7,7 @@ class CleanTask(object):
         task_data = json.loads(task_json)
         self.tasks = task_data['tasks']
         self.date_format = "%Y-%m-%d %H:%M:%S"
-        self.now = datetime.now(pytz.timezone('Asia/Tokyo'))
+        self.now = datetime.now() + timedelta(hours=9)
 
     def __evaluate_cleanup_timing(self, task):
         """Evaluate cleanup timing
@@ -18,7 +17,7 @@ class CleanTask(object):
 
         # 現在の日時を取得
         task_time = datetime.strptime(task['updated_at'], self.date_format)
-        if (self.now - task_time).days >= task['duration']:
+        if (self.now - task_time).days >= int(task['duration']):
             return True
 
     def get_todo_tasks(self):
@@ -58,4 +57,11 @@ class CleanTask(object):
         :param task_name: task name
         :param duration: duration
         """
-        self.tasks.append({'task_name': task_name, 'updated_at': self.now.strftime(self.date_format), 'duration': duration})
+        # durationが整数かどうかのチェック
+        try:
+            duration_int = int(duration)
+        except ValueError:
+            # durationが整数に変換できない場合のエラー処理
+            raise ValueError(f"Duration must be an integer, got {duration}")
+
+        self.tasks.append({'task_name': task_name, 'updated_at': self.now.strftime(self.date_format), 'duration': duration_int})
