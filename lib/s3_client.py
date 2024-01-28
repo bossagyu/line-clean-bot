@@ -42,7 +42,7 @@ class S3client:
                 return False
             else:
                 print(f"An error occurred: {e}")
-                return False
+                raise e
 
     def delete_objects(self, objects):
         """Delete objects from S3 bucket
