@@ -9,6 +9,7 @@ class Message:
         """
         self.clean_task = clean_task
         self.user_id = user_id
+        self.object_keyname = user_id + ".json"
 
     def get_return_message(self, message, s3client):
         """LINEで受け取ったメッセージから処理する内容を判別し、メッセージを返却する関数
@@ -32,7 +33,7 @@ class Message:
         if task_operation == '完了':
             self.clean_task.update_task_updated_at(task_name)
             print(self.clean_task.get_json())
-            s3client.update_object(self.user_id + ".json", self.clean_task.get_json())
+            s3client.update_object(self.object_keyname, self.clean_task.get_json())
             message = f"{task_name}を完了しました。\n"
             return message + self.get_periodically_push_message()
 
@@ -41,7 +42,7 @@ class Message:
             duration = self.__get_duration(message)
             self.clean_task.add_task(task_name, duration)
             print(self.clean_task.get_json())
-            s3client.update_object(self.user_id + ".json", self.clean_task.get_json())
+            s3client.update_object(self.object_keyname, self.clean_task.get_json())
             message = f"{task_name}を追加しました。\n"
             return message + self.__get_task_check_message()
 
