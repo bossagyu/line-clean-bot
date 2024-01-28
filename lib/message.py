@@ -1,6 +1,7 @@
 import re
 from lib.s3_client import S3client
 
+
 class Message:
     def __init__(self, clean_task, user_id):
         """Initiate message class
@@ -46,6 +47,16 @@ class Message:
             message = f"{task_name}を追加しました。\n"
             return message + self.__get_task_check_message()
 
+        if task_operation == '削除':
+            self.clean_task.delete_task(task_name)
+            print(self.clean_task.get_json())
+            s3client.update_object(self.object_keyname, self.clean_task.get_json())
+            message = f"{task_name}を削除しました。\n"
+            return message + self.__get_task_check_message()
+
+        # 残りの場合はtodo状況にあるタスクの一覧を返却する
+        if task_operation == '残り':
+            return self.get_periodically_push_message()
 
     def __get_task_check_message(self):
         """タスクの詳細情報を返却する関数"""

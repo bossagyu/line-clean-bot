@@ -65,3 +65,12 @@ class CleanTask(object):
             raise ValueError(f"Duration must be an integer, got {duration}")
 
         self.tasks.append({'task_name': task_name, 'updated_at': self.now.strftime(self.date_format), 'duration': duration_int})
+
+    def delete_task(self, task_name):
+        """Delete task
+        :param task_name: task name
+        """
+        for task in self.tasks:
+            if task['task_name'] == task_name:
+                self.tasks.remove(task)
+                break
