@@ -7,13 +7,11 @@ from lib.clean_task import CleanTask
 from lib.message import Message
 
 CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
-USER_ID = os.getenv('USER_ID')
 BUCKET_NAME = os.getenv('BUCKET_NAME')
 
 
 def push_message_periodically(event, context):
     print(CHANNEL_ACCESS_TOKEN)
-    print(USER_ID)
     print(event)
     print(context)
 
