@@ -43,15 +43,19 @@ def process_user_message(event, context):
     print(body)
 
     # uidとメッセージを取得
-    user_id = body['events'][0]['source']['userId']
+    if body['events'][0]['source']['type'] != 'user':
+        line_id = body['events'][0]['source']['userId']
+    else:
+        line_id = body['events'][0]['source']['groupId']
+
     message = body['events'][0]['message']['text']
 
-    print(user_id)
+    print(line_id)
     print(message)
 
     # s3からデータを取得
     s3client = S3client(BUCKET_NAME)
-    obj_key = user_id + '.json'
+    obj_key = line_id + '.json'
     # オブジェクトが存在しない場合はからタスクを作成
     if not s3client.check_exist_object(obj_key):
         s3client.update_object(obj_key, '{"tasks": []}')
@@ -59,7 +63,7 @@ def process_user_message(event, context):
     clean_task_obj = CleanTask(obj_body)
 
     # メッセージを処理
-    message_obj = Message(clean_task_obj, user_id)
+    message_obj = Message(clean_task_obj, line_id)
     line_return_message = message_obj.get_return_message(message, s3client)
 
     # メッセージがからの場合は処理を終了
@@ -67,6 +71,6 @@ def process_user_message(event, context):
         return
 
     # メッセージを送信
-    line = Line(CHANNEL_ACCESS_TOKEN, user_id)
+    line = Line(CHANNEL_ACCESS_TOKEN, line_id)
     line.push_message(line_return_message)
 
