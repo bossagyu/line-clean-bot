@@ -55,4 +55,5 @@ class S3client:
         :param keyname: object key name
         :param body: object body
         """
+        body = body.encode('utf-8')
         self.bucket.Object(keyname).put(Body=body)
