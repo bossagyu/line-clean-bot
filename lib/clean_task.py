@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+import pytz
 
 
 class CleanTask(object):
@@ -7,6 +8,7 @@ class CleanTask(object):
         task_data = json.loads(task_json)
         self.tasks = task_data['tasks']
         self.date_format = "%Y-%m-%d %H:%M:%S"
+        self.now = datetime.now(pytz.timezone('Asia/Tokyo'))
 
     def __evaluate_cleanup_timing(self, task):
         """Evaluate cleanup timing
@@ -15,9 +17,8 @@ class CleanTask(object):
         """
 
         # 現在の日時を取得
-        now = datetime.now()
         task_time = datetime.strptime(task['updated_at'], self.date_format)
-        if (now - task_time).days >= task['duration']:
+        if (self.now - task_time).days >= task['duration']:
             return True
 
     def get_todo_tasks(self):
@@ -42,7 +43,7 @@ class CleanTask(object):
         """
         for task in self.tasks:
             if task['task_name'] == task_name:
-                task['updated_at'] = datetime.now().strftime(self.date_format)
+                task['updated_at'] = self.now.strftime(self.date_format)
                 break
 
     def get_json(self):
@@ -57,4 +58,4 @@ class CleanTask(object):
         :param task_name: task name
         :param duration: duration
         """
-        self.tasks.append({'task_name': task_name, 'updated_at': datetime.now().strftime(self.date_format), 'duration': duration})
+        self.tasks.append({'task_name': task_name, 'updated_at': self.now.strftime(self.date_format), 'duration': duration})
