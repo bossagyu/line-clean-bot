@@ -52,3 +52,9 @@ class CleanTask(object):
         task_data = {'tasks': self.tasks}
         return json.dumps(task_data)
 
+    def add_task(self, task_name, duration):
+        """Add task
+        :param task_name: task name
+        :param duration: duration
+        """
+        self.tasks.append({'task_name': task_name, 'updated_at': datetime.now().strftime(self.date_format), 'duration': duration})

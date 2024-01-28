@@ -36,6 +36,15 @@ class Message:
             message = f"{task_name}を完了しました。\n"
             return message + self.get_periodically_push_message()
 
+        # タスクの追加
+        if task_operation == '追加':
+            duration = self.__get_duration(message)
+            self.clean_task.add_task(task_name, duration)
+            print(self.clean_task.get_json())
+            s3client.update_object(self.user_id + ".json", self.clean_task.get_json())
+            message = f"{task_name}を追加しました。\n"
+            return message + self.__get_task_check_message()
+
 
     def __get_task_check_message(self):
         """タスクの詳細情報を返却する関数"""
@@ -71,3 +80,11 @@ class Message:
         """
         elements = re.split(r'\s|\u3000', message)
         return elements[1] if len(elements) > 1 else None
+
+    def __get_duration(self, message):
+        """タスク名を取得する
+        :param message: message
+        :return: task name
+        """
+        elements = re.split(r'\s|\u3000', message)
+        return elements[2] if len(elements) > 2 else None
