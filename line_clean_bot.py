@@ -54,6 +54,9 @@ def process_user_message(event, context):
     # s3からデータを取得
     s3client = S3client(BUCKET_NAME)
     obj_key = user_id + '.json'
+    # オブジェクトが存在しない場合はからタスクを作成
+    if not s3client.check_exist_object(obj_key):
+        s3client.update_object(obj_key, '{"tasks": []}')
     obj_body = s3client.get_object_body(obj_key)
     clean_task_obj = CleanTask(obj_body)
 

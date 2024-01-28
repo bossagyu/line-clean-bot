@@ -1,4 +1,5 @@
 import boto3
+from botocore.exceptions import ClientError
 
 
 class S3client:
@@ -25,6 +26,23 @@ class S3client:
         """
         objects = self.bucket.objects.all()
         return objects
+
+    def check_exist_object(self, keyname):
+        """Check if object exists in S3 bucket
+        :param keyname: object key name
+        :return: boolean
+        """
+        try:
+            self.bucket.Object(keyname).load()
+            return True
+        except ClientError as e:
+            error_code = e.response['Error']['Code']
+            if error_code == '404':
+                print("Object does not exist.")
+                return False
+            else:
+                print(f"An error occurred: {e}")
+                return False
 
     def delete_objects(self, objects):
         """Delete objects from S3 bucket
