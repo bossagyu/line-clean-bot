@@ -8,7 +8,8 @@ from lib.s3_client import S3client
 @pytest.fixture
 def aws_credentials():
     """AWS Credentials for moto."""
-    boto3.setup_default_session(aws_access_key_id="testing", aws_secret_access_key="testing", aws_session_token="testing")
+    boto3.setup_default_session(aws_access_key_id="testing", aws_secret_access_key="testing",
+                                aws_session_token="testing")
 
 
 @pytest.fixture
@@ -46,6 +47,16 @@ def test_get_object_body(s3_setup):
     body = client.get_object_body("hello.txt")
 
     assert body == test_body
+
+
+def test_check_exist_object(s3_setup):
+    bucket_name = s3_setup
+    client = S3client(bucket_name)
+    s3 = boto3.resource('s3')
+    s3.Object(bucket_name, "exist.txt").put(Body="This is a test file")
+
+    assert client.check_exist_object("exist.txt") is True
+    assert client.check_exist_object("not_exist.txt") is False
 
 
 def test_delete_objects(s3_setup):
