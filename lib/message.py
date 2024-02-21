@@ -32,11 +32,14 @@ class Message:
 
         # 完了の場合はs3のタスクの時刻を更新する
         if task_operation == '完了':
-            self.clean_task.update_task_updated_at(task_name)
+            return_message = ""
+            for done_task_name in self.__get_all_task_name(message):
+                self.clean_task.update_task_updated_at(done_task_name)
+                return_message = f"{done_task_name}を完了しました。\n"
+                print(return_message)
             print(self.clean_task.get_json())
             s3client.update_object(self.object_keyname, self.clean_task.get_json())
-            message = f"{task_name}を完了しました。\n"
-            return message + self.get_periodically_push_message()
+            return return_message + self.get_periodically_push_message()
 
         # タスクの追加
         if task_operation == '追加':
@@ -44,15 +47,15 @@ class Message:
             self.clean_task.add_task(task_name, duration)
             print(self.clean_task.get_json())
             s3client.update_object(self.object_keyname, self.clean_task.get_json())
-            message = f"{task_name}を追加しました。\n"
-            return message + self.__get_task_check_message()
+            return_message = f"{task_name}を追加しました。\n"
+            return return_message + self.__get_task_check_message()
 
         if task_operation == '削除':
             self.clean_task.delete_task(task_name)
             print(self.clean_task.get_json())
             s3client.update_object(self.object_keyname, self.clean_task.get_json())
-            message = f"{task_name}を削除しました。\n"
-            return message + self.__get_task_check_message()
+            return_message = f"{task_name}を削除しました。\n"
+            return return_message + self.__get_task_check_message()
 
         # 残りの場合はtodo状況にあるタスクの一覧を返却する
         if task_operation == '残り':
@@ -71,8 +74,15 @@ class Message:
     def get_periodically_push_message(self):
         """todo状況にあるタスクの一覧のメッセージを返却する関数"""
         push_message = ''
+        tasks = self.clean_task.get_todo_tasks()
+
+        if len(tasks) == 0:
+            push_message += '残りのタスクはありません。\n'
+            push_message += 'おつかれさまでした！\n'
+            return push_message
+
         push_message += 'タスクは以下の通りです。\n'
-        for task in self.clean_task.get_todo_tasks():
+        for task in tasks:
             push_message += task['task_name'] + '\n'
         return push_message
 
@@ -100,3 +110,10 @@ class Message:
         """
         elements = re.split(r'\s|\u3000', message)
         return elements[2] if len(elements) > 2 else None
+
+    def __get_all_task_name(self, message):
+        """タスク名を取得する
+        :param message: message
+        """
+        elements = re.split(r'\s|\u3000', message)
+        return elements[1:]

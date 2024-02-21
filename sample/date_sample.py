@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import pytz
 
 # 現在の日時を取得
 now = datetime.now()
@@ -18,7 +19,11 @@ with open('../test/data/s3_test_file.json', 'r') as f:
 # 日付と時刻の文字列
 date_string = "2024-01-07 19:44:24.885866"
 # 日付と時刻のフォーマット
-date_format = "%Y-%m-%d %H:%M:%S.%f"
+date_format = "%Y-%m-%d %H:%M:%S"
 
 print(result['tasks'][0]['updated_at'])
-print((datetime.strptime(result['tasks'][0]['updated_at'], date_format) - start_date).days)
+result_time = datetime.strptime(result['tasks'][0]['updated_at'], date_format)
+tokyo_timezone = pytz.timezone('Asia/Tokyo')
+task_time = tokyo_timezone.localize(result_time)
+
+print(task_time)

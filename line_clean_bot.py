@@ -43,7 +43,7 @@ def process_user_message(event, context):
     print(body)
 
     # uidとメッセージを取得
-    if body['events'][0]['source']['type'] is 'user':
+    if body['events'][0]['source']['type'] == 'user':
         line_id = body['events'][0]['source']['userId']
     else:
         line_id = body['events'][0]['source']['groupId']
