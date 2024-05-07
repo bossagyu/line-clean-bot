@@ -26,6 +26,10 @@ class Message:
         print("task_operation: ", task_operation)
         print("task_name: ", task_name)
 
+        # 使い方の場合は使い方を返却する
+        if task_operation == '使い方':
+            return self.__get_usage_message()
+
         # タスク確認の場合はタスクの詳細情報を返却する
         if message == '確認':
             return self.__get_task_check_message()
@@ -85,6 +89,15 @@ class Message:
         for task in tasks:
             push_message += task['task_name'] + '\n'
         return push_message
+
+    def __get_usage_message(self):
+        """使用方法を返却する関数"""
+        return '使い方\n' \
+               '完了 [タスク名] : タスクを完了にする\n' \
+               '追加 [タスク名] [日数] : タスクを追加する\n' \
+               '削除 [タスク名] : タスクを削除する\n' \
+               '確認 : タスクの詳細情報を確認する\n' \
+               '残り : 残りのタスクを確認する'
 
     def __get_task_operation_name(self, message):
         """操作を取得する
