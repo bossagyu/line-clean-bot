@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.Python
+pip-selfcheck.json
+
+# Virtual Environment
+venv/
+.venv/
+[Bb]in/
+[Ii]nclude/
+[Ll]ib64/
+[Ll]ocal/
+[Ss]cripts/
+pyvenv.cfg
+
+# AWS SAM
+.aws-sam/
+
+# IDE
+.idea/
+*.iml
+out/
+gen/
+
+# Local Testing
+test/local_test_data/

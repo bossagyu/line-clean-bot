@@ -70,3 +70,4 @@ def test_delete_objects(s3_setup):
 
     objects_after_delete = list(client.list_objects())
     assert len(objects_after_delete) == 0
+
