@@ -34,6 +34,19 @@ sam build
 sam deploy
 ```
 
+### デプロイ状況確認
+
+```bash
+# Lambda関数一覧
+aws lambda list-functions --region ap-northeast-1 --output table
+
+# Lambda関数の詳細
+aws lambda get-function-configuration --function-name process_user_message --region ap-northeast-1
+
+# S3バケット内のタスクデータ確認
+aws s3 ls s3://bossagyu-lambda-line-clean-bot/
+```
+
 ## アーキテクチャ
 
 ### Lambdaエントリーポイント (line_clean_bot.py)
@@ -69,6 +82,31 @@ sam deploy
 }
 ```
 
+## AWS デプロイ構成
+
+### リージョン
+
+ap-northeast-1（東京）
+
+### Lambda関数
+
+| 関数名 | ハンドラー | ランタイム |
+|--------|-----------|-----------|
+| `process_user_message` | line_clean_bot.process_user_message | Python 3.11 |
+| `push-message-periodically` | line_clean_bot.push_message_periodically | Python 3.11 |
+
+### API Gateway
+
+- **API ID**: bqmf13lp70
+- **エンドポイント**: https://bqmf13lp70.execute-api.ap-northeast-1.amazonaws.com
+- **ルート**: ANY /process_user_message
+- **LINE Webhook URL**: https://bqmf13lp70.execute-api.ap-northeast-1.amazonaws.com/process_user_message
+
+### S3バケット
+
+- `bossagyu-lambda-line-clean-bot` - 本番用タスクデータ
+- `bossagyu-lambda-line-clean-bot-test` - テスト用
+
 ## LINE Botコマンド
 
 - `完了 [タスク名]` - タスクを完了にする（複数指定可）
@@ -81,7 +119,7 @@ sam deploy
 ## 環境変数
 
 - `CHANNEL_ACCESS_TOKEN` - LINEチャンネルアクセストークン
-- `BUCKET_NAME` - タスク保存用S3バケット名
+- `BUCKET_NAME` - タスク保存用S3バケット名（本番: `bossagyu-lambda-line-clean-bot`）
 
 ## テスト
 
