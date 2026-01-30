@@ -16,6 +16,8 @@ pip install -r requirements.txt
 
 # テスト実行（プロジェクトルートから）
 pytest test/
+# または
+make test
 
 # 特定のテストファイルを実行
 pytest test/lib/s3_client_test.py
@@ -24,21 +26,50 @@ pytest test/lib/s3_client_test.py
 pytest test/lib/s3_client_test.py::test_get_object_body
 ```
 
-### デプロイ
+### デプロイ（Makefile使用）
 
 ```bash
-# AWS SAMでビルド
+# ビルド
+make build
+
+# デプロイ（CHANNEL_ACCESS_TOKENが必要）
+CHANNEL_ACCESS_TOKEN=your_token make deploy
+
+# 確認なしでデプロイ
+CHANNEL_ACCESS_TOKEN=your_token make deploy-no-confirm
+
+# テンプレート検証
+make validate
+
+# ビルドキャッシュ削除
+make clean
+```
+
+### デプロイ（SAMコマンド直接）
+
+```bash
+# ビルド
 sam build
 
-# デプロイ（AWS認証情報が必要）
-sam deploy
+# デプロイ
+sam deploy --parameter-overrides ChannelAccessToken=your_token
+```
+
+### ログ確認
+
+```bash
+# process_user_messageのログをリアルタイム表示
+make logs
+
+# push-message-periodicallyのログ
+make logs-push
 ```
 
 ### デプロイ状況確認
 
 ```bash
-# Lambda関数一覧
-aws lambda list-functions --region ap-northeast-1 --output table
+# スタックのステータス
+make status
 
 # Lambda関数の詳細
 aws lambda get-function-configuration --function-name process_user_message --region ap-northeast-1
@@ -84,23 +115,31 @@ aws s3 ls s3://bossagyu-lambda-line-clean-bot/
 
 ## AWS デプロイ構成
 
+### SAMテンプレート構成
+
+- `template.yaml` - Lambda、API Gateway、IAMポリシー、スケジュール定義
+- `samconfig.toml` - デプロイパラメータ（リージョン、スタック名など）
+
 ### リージョン
 
 ap-northeast-1（東京）
 
 ### Lambda関数
 
-| 関数名 | ハンドラー | ランタイム |
-|--------|-----------|-----------|
-| `process_user_message` | line_clean_bot.process_user_message | Python 3.11 |
-| `push-message-periodically` | line_clean_bot.push_message_periodically | Python 3.11 |
+| 関数名 | ハンドラー | トリガー |
+|--------|-----------|----------|
+| `process_user_message` | line_clean_bot.process_user_message | API Gateway (HTTP API) |
+| `push-message-periodically` | line_clean_bot.push_message_periodically | EventBridge Schedule |
+
+### CloudFormationスタック
+
+- **スタック名**: line-clean-bot
 
 ### API Gateway
 
-- **API ID**: bqmf13lp70
-- **エンドポイント**: https://bqmf13lp70.execute-api.ap-northeast-1.amazonaws.com
+- **API ID**: 1k6enr57pi
 - **ルート**: ANY /process_user_message
-- **LINE Webhook URL**: https://bqmf13lp70.execute-api.ap-northeast-1.amazonaws.com/process_user_message
+- **LINE Webhook URL**: https://1k6enr57pi.execute-api.ap-northeast-1.amazonaws.com/process_user_message
 
 ### S3バケット
 
@@ -118,8 +157,8 @@ ap-northeast-1（東京）
 
 ## 環境変数
 
-- `CHANNEL_ACCESS_TOKEN` - LINEチャンネルアクセストークン
-- `BUCKET_NAME` - タスク保存用S3バケット名（本番: `bossagyu-lambda-line-clean-bot`）
+- `CHANNEL_ACCESS_TOKEN` - LINEチャンネルアクセストークン（デプロイ時にパラメータで指定）
+- `BUCKET_NAME` - タスク保存用S3バケット名（デフォルト: `bossagyu-lambda-line-clean-bot`）
 
 ## テスト
 

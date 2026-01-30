@@ -1,0 +1,14 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "line-clean-bot"
+region = "ap-northeast-1"
+resolve_s3 = true
+s3_prefix = "line-clean-bot"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+parameter_overrides = "BucketName=bossagyu-lambda-line-clean-bot"
+
+[default.build.parameters]
+cached = true
+parallel = true

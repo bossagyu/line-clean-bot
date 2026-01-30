@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: LINE Clean Bot - Periodic cleaning task manager
+
+Parameters:
+  ChannelAccessToken:
+    Type: String
+    Description: LINE Channel Access Token
+    NoEcho: true
+  BucketName:
+    Type: String
+    Default: bossagyu-lambda-line-clean-bot
+    Description: S3 bucket name for task data
+  ScheduleExpression:
+    Type: String
+    Default: cron(0 9 * * ? *)
+    Description: "Schedule for periodic push (default: daily at 9:00 JST)"
+
+Globals:
+  Function:
+    Runtime: python3.11
+    Timeout: 300
+    MemorySize: 128
+    Environment:
+      Variables:
+        CHANNEL_ACCESS_TOKEN: !Ref ChannelAccessToken
+        BUCKET_NAME: !Ref BucketName
+
+Resources:
+  # Lambda function for processing LINE messages
+  ProcessUserMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: process_user_message
+      Handler: line_clean_bot.process_user_message
+      CodeUri: .
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref BucketName
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /process_user_message
+            Method: ANY
+
+  # Lambda function for scheduled push messages
+  PushMessagePeriodicallyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: push-message-periodically
+      Handler: line_clean_bot.push_message_periodically
+      CodeUri: .
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref BucketName
+      Events:
+        ScheduleEvent:
+          Type: Schedule
+          Properties:
+            Schedule: !Ref ScheduleExpression
+            Enabled: true
+
+Outputs:
+  ApiEndpoint:
+    Description: LINE Webhook URL
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/process_user_message"
+  ProcessUserMessageFunction:
+    Description: Process User Message Lambda Function ARN
+    Value: !GetAtt ProcessUserMessageFunction.Arn
+  PushMessagePeriodicallyFunction:
+    Description: Push Message Periodically Lambda Function ARN
+    Value: !GetAtt PushMessagePeriodicallyFunction.Arn
