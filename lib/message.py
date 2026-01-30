@@ -65,6 +65,9 @@ class Message:
         if task_operation == '残り':
             return self.get_periodically_push_message()
 
+        # コマンドが認識されなかった場合
+        return 'コマンドを認識できませんでした。「使い方」と入力してください。'
+
     def __get_task_check_message(self):
         """タスクの詳細情報を返却する関数"""
         push_message = ''
