@@ -30,6 +30,21 @@ class CleanTask(object):
                 todo_tasks.append(task)
         return todo_tasks
 
+    def get_elapsed_days(self, task):
+        """Get elapsed days since last update
+        :param task: task
+        :return: elapsed days
+        """
+        task_time = datetime.strptime(task['updated_at'], self.date_format)
+        return (self.now - task_time).days
+
+    def get_todo_tasks_sorted_by_elapsed_days(self):
+        """Get todo tasks sorted by elapsed days (longest first)
+        :return: list of todo tasks sorted by elapsed days descending
+        """
+        todo_tasks = self.get_todo_tasks()
+        return sorted(todo_tasks, key=lambda task: self.get_elapsed_days(task), reverse=True)
+
     def get_all_tasks(self):
         """Get all task
         :return: list of exception tasks

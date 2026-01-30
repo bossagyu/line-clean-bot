@@ -43,3 +43,12 @@ def test_usage_command_returns_usage_message(message_instance, mock_s3client):
     assert '使い方' in result
     assert '完了' in result
     assert '追加' in result
+
+
+def test_periodically_push_message_shows_elapsed_days(message_instance):
+    """残りタスクのメッセージに経過日数が表示される"""
+    result = message_instance.get_periodically_push_message()
+    # task1は期限切れなので表示される
+    assert 'task1' in result
+    # 経過日数がカッコで表示される（例: task1 (XXX日)）
+    assert '日)' in result

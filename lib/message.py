@@ -81,7 +81,7 @@ class Message:
     def get_periodically_push_message(self):
         """todo状況にあるタスクの一覧のメッセージを返却する関数"""
         push_message = ''
-        tasks = self.clean_task.get_todo_tasks()
+        tasks = self.clean_task.get_todo_tasks_sorted_by_elapsed_days()
 
         if len(tasks) == 0:
             push_message += '残りのタスクはありません。\n'
@@ -90,7 +90,8 @@ class Message:
 
         push_message += 'タスクは以下の通りです。\n'
         for task in tasks:
-            push_message += task['task_name'] + '\n'
+            elapsed_days = self.clean_task.get_elapsed_days(task)
+            push_message += f"{task['task_name']} ({elapsed_days}日)\n"
         return push_message
 
     def __get_usage_message(self):
