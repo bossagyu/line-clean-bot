@@ -1,6 +1,6 @@
 import boto3
 import pytest
-from moto import mock_s3
+from moto import mock_aws
 
 from lib.s3_client import S3client
 
@@ -14,7 +14,7 @@ def aws_credentials():
 
 @pytest.fixture
 def s3_client(aws_credentials):
-    with mock_s3():
+    with mock_aws():
         yield boto3.client('s3', region_name='us-east-1')
 
 
@@ -65,7 +65,7 @@ def test_delete_objects(s3_setup):
     s3 = boto3.resource('s3')
     s3.Object(bucket_name, "delete_me.txt").put(Body="Delete this file")
 
-    objects = list(client.list_objects())
+    objects = client.list_objects()
     client.delete_objects(objects)
 
     objects_after_delete = list(client.list_objects())

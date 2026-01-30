@@ -1,0 +1,3 @@
+{
+  "body": "{\"events\":[{\"type\":\"message\",\"source\":{\"type\":\"user\",\"userId\":\"test-user-123\"},\"message\":{\"type\":\"text\",\"text\":\"確認\"}}]}"
+}

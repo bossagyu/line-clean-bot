@@ -1,4 +1,12 @@
-.PHONY: build deploy test clean logs
+.PHONY: build deploy test clean logs local-api local-invoke install sync
+
+# Install dependencies
+install:
+	uv sync
+
+# Sync dependencies
+sync:
+	uv sync
 
 # Build the SAM application
 build:
@@ -23,11 +31,11 @@ deploy-no-confirm: build
 
 # Run tests
 test:
-	pytest test/
+	uv run pytest test/
 
 # Run tests with coverage
 test-cov:
-	pytest test/ --cov=lib --cov-report=term-missing
+	uv run pytest test/ --cov=lib --cov-report=term-missing
 
 # Clean build artifacts
 clean:
@@ -41,9 +49,13 @@ logs:
 logs-push:
 	sam logs -n push-message-periodically --region ap-northeast-1 --tail
 
-# Local invoke for testing (requires event.json)
-local-invoke:
-	sam local invoke ProcessUserMessageFunction -e api_gateway_sample.py
+# Start local API server
+local-api: build
+	sam local start-api --env-vars env.json
+
+# Local invoke for testing
+local-invoke: build
+	sam local invoke ProcessUserMessageFunction --env-vars env.json -e events/line_message.json
 
 # Validate template
 validate:

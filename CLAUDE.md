@@ -11,19 +11,19 @@
 ### 開発
 
 ```bash
-# 依存関係のインストール
-pip install -r requirements.txt
+# 依存関係のインストール（uv使用）
+uv sync
 
 # テスト実行（プロジェクトルートから）
-pytest test/
+uv run pytest test/
 # または
 make test
 
 # 特定のテストファイルを実行
-pytest test/lib/s3_client_test.py
+uv run pytest test/lib/s3_client_test.py
 
 # 特定のテストケースを実行
-pytest test/lib/s3_client_test.py::test_get_object_body
+uv run pytest test/lib/s3_client_test.py::test_get_object_body
 ```
 
 ### デプロイ（Makefile使用）
@@ -64,6 +64,23 @@ make logs
 # push-message-periodicallyのログ
 make logs-push
 ```
+
+### ローカル実行
+
+```bash
+# ローカルAPIサーバー起動（Docker必要）
+make local-api
+
+# 別ターミナルでテスト
+curl -X POST http://localhost:3000/process_user_message \
+  -H "Content-Type: application/json" \
+  -d @events/line_message.json
+
+# Lambda単体実行
+make local-invoke
+```
+
+ローカル実行時はテスト用S3バケットに接続し、LINE送信はスキップされます（ログ出力のみ）。
 
 ### デプロイ状況確認
 
@@ -159,7 +176,57 @@ ap-northeast-1（東京）
 
 - `CHANNEL_ACCESS_TOKEN` - LINEチャンネルアクセストークン（デプロイ時にパラメータで指定）
 - `BUCKET_NAME` - タスク保存用S3バケット名（デフォルト: `bossagyu-lambda-line-clean-bot`）
+- `DRY_RUN` - `true`でLINE送信をスキップ（ローカル実行用）
+
+## プロジェクト構造
+
+```
+clean-bot/
+├── lib/                      # コアモジュール
+│   ├── clean_task.py         # タスク状態管理
+│   ├── line.py               # LINE Bot APIラッパー（DRY_RUN対応）
+│   ├── message.py            # コマンドパーサー
+│   └── s3_client.py          # S3永続化レイヤー
+├── test/
+│   ├── data/                 # テストデータ
+│   │   └── s3_test_file.json
+│   └── lib/                  # ユニットテスト
+│       ├── clean_task_test.py
+│       └── s3_client_test.py
+├── events/                   # ローカル実行用イベント
+│   └── line_message.json     # テスト用LINEメッセージ
+├── line_clean_bot.py         # Lambdaエントリーポイント
+├── template.yaml             # SAMテンプレート
+├── samconfig.toml            # SAMデプロイ設定
+├── env.json                  # ローカル実行用環境変数
+├── pyproject.toml            # uv/Python設定
+└── Makefile                  # 開発コマンド
+```
 
 ## テスト
 
 テストは`moto`でS3をモック化し、`pytest`フィクスチャを使用。テストデータは`test/data/`に配置。
+
+### テスト設定
+
+- **moto 5.x**: `mock_aws`デコレータを使用（旧`mock_s3`は非推奨）
+- **pythonpath**: `pyproject.toml`で`["."]`を設定し、プロジェクトルートからのインポートを有効化
+
+```toml
+# pyproject.toml
+[tool.pytest.ini_options]
+pythonpath = ["."]
+```
+
+### テストの実行
+
+```bash
+# 全テスト実行
+uv run pytest test/
+
+# 詳細出力
+uv run pytest test/ -v
+
+# 特定のテスト
+uv run pytest test/lib/s3_client_test.py::test_get_object_body
+```

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from lib.clean_task import CleanTask
@@ -5,7 +7,8 @@ from lib.clean_task import CleanTask
 
 @pytest.fixture
 def load_task_json():
-    with open('../data/s3_test_file.json', 'r') as f:
+    test_data_path = Path(__file__).parent.parent / 'data' / 's3_test_file.json'
+    with open(test_data_path, 'r') as f:
         return f.read()
 
 
