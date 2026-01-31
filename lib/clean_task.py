@@ -88,6 +88,27 @@ class CleanTask(object):
         """
         return {**self.notification}
 
+    def set_notification_settings(self, days, hour):
+        """通知設定を更新する
+        :param days: 通知する曜日のリスト
+        :param hour: 通知する時刻（時）
+        """
+        self.notification = {
+            **self.notification,
+            'enabled': True,
+            'days': days,
+            'hour': int(hour)
+        }
+
+    def set_notification_enabled(self, enabled):
+        """通知のON/OFFを切り替える
+        :param enabled: 通知を有効にするかどうか
+        """
+        self.notification = {
+            **self.notification,
+            'enabled': enabled
+        }
+
     def get_json(self):
         """Get json string
         :return: json string

@@ -110,3 +110,27 @@ def test_get_json_includes_default_notification():
     assert result['notification']['days'] == []
     assert result['notification']['hour'] == 10
     assert result['notification']['last_notified_at'] is None
+
+
+def test_set_notification_settings():
+    """通知設定を更新できる"""
+    task_json = json.dumps({"tasks": []})
+    clean_task = CleanTask(task_json)
+    clean_task.set_notification_settings(["月", "水", "金"], 7)
+    settings = clean_task.get_notification_settings()
+    assert settings['enabled'] == True
+    assert settings['days'] == ["月", "水", "金"]
+    assert settings['hour'] == 7
+
+
+def test_set_notification_enabled():
+    """通知のON/OFFを切り替えられる"""
+    task_json = json.dumps({
+        "tasks": [],
+        "notification": {"enabled": True, "days": ["月"], "hour": 7, "last_notified_at": None}
+    })
+    clean_task = CleanTask(task_json)
+    clean_task.set_notification_enabled(False)
+    assert clean_task.get_notification_settings()['enabled'] == False
+    clean_task.set_notification_enabled(True)
+    assert clean_task.get_notification_settings()['enabled'] == True
