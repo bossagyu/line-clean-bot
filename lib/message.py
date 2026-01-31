@@ -91,7 +91,8 @@ class Message:
         push_message += 'タスクは以下の通りです。\n'
         for task in tasks:
             elapsed_days = self.clean_task.get_elapsed_days(task)
-            push_message += f"{task['task_name']} ({elapsed_days}日)\n"
+            overdue_days = elapsed_days - int(task['duration'])
+            push_message += f"{task['task_name']} (+{overdue_days}日)\n"
         return push_message
 
     def __get_usage_message(self):
