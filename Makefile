@@ -1,5 +1,11 @@
 .PHONY: build deploy test clean logs local-api local-invoke install sync
 
+# Load .env file if it exists
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
+
 # Install dependencies
 install:
 	uv sync

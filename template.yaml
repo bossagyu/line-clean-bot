@@ -13,8 +13,8 @@ Parameters:
     Description: S3 bucket name for task data
   ScheduleExpression:
     Type: String
-    Default: cron(0 9 * * ? *)
-    Description: "Schedule for periodic push (default: daily at 9:00 JST)"
+    Default: cron(0 1 ? * SAT *)
+    Description: "Schedule for periodic push (default: Saturday at 10:00 JST)"
 
 Globals:
   Function:

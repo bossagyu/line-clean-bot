@@ -25,3 +25,6 @@ gen/
 
 # Local Testing
 test/local_test_data/
+
+# Environment variables
+.env
