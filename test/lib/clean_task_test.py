@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -134,3 +135,87 @@ def test_set_notification_enabled():
     assert clean_task.get_notification_settings()['enabled'] == False
     clean_task.set_notification_enabled(True)
     assert clean_task.get_notification_settings()['enabled'] == True
+
+
+def test_should_notify_returns_true_when_conditions_met():
+    """条件を満たす場合はTrueを返す"""
+    task_json = json.dumps({
+        "tasks": [],
+        "notification": {
+            "enabled": True,
+            "days": ["土"],
+            "hour": 7,
+            "last_notified_at": "2026-01-30 07:00:00"
+        }
+    })
+    clean_task = CleanTask(task_json)
+    # 2026-01-31は土曜日、時刻は7:05
+    test_time = datetime(2026, 1, 31, 7, 5, 0)
+    assert clean_task.should_notify(test_time) == True
+
+
+def test_should_notify_returns_false_when_disabled():
+    """enabled=falseの場合はFalseを返す"""
+    task_json = json.dumps({
+        "tasks": [],
+        "notification": {
+            "enabled": False,
+            "days": ["土"],
+            "hour": 7,
+            "last_notified_at": None
+        }
+    })
+    clean_task = CleanTask(task_json)
+    test_time = datetime(2026, 1, 31, 7, 5, 0)
+    assert clean_task.should_notify(test_time) == False
+
+
+def test_should_notify_returns_false_when_wrong_day():
+    """曜日が一致しない場合はFalseを返す"""
+    task_json = json.dumps({
+        "tasks": [],
+        "notification": {
+            "enabled": True,
+            "days": ["月"],
+            "hour": 7,
+            "last_notified_at": None
+        }
+    })
+    clean_task = CleanTask(task_json)
+    # 土曜日だが設定は月曜日
+    test_time = datetime(2026, 1, 31, 7, 5, 0)
+    assert clean_task.should_notify(test_time) == False
+
+
+def test_should_notify_returns_false_when_before_hour():
+    """設定時刻前はFalseを返す"""
+    task_json = json.dumps({
+        "tasks": [],
+        "notification": {
+            "enabled": True,
+            "days": ["土"],
+            "hour": 10,
+            "last_notified_at": None
+        }
+    })
+    clean_task = CleanTask(task_json)
+    # 7時だが設定は10時
+    test_time = datetime(2026, 1, 31, 7, 5, 0)
+    assert clean_task.should_notify(test_time) == False
+
+
+def test_should_notify_returns_false_when_already_notified_today():
+    """今日すでに通知済みの場合はFalseを返す"""
+    task_json = json.dumps({
+        "tasks": [],
+        "notification": {
+            "enabled": True,
+            "days": ["土"],
+            "hour": 7,
+            "last_notified_at": "2026-01-31 07:05:00"
+        }
+    })
+    clean_task = CleanTask(task_json)
+    # 今日の8時だが、7:05に通知済み
+    test_time = datetime(2026, 1, 31, 8, 0, 0)
+    assert clean_task.should_notify(test_time) == False

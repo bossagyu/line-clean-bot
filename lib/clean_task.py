@@ -141,3 +141,38 @@ class CleanTask(object):
             if task['task_name'] == task_name:
                 self.tasks.remove(task)
                 break
+
+    def should_notify(self, current_time):
+        """通知すべきか判定する
+        :param current_time: 現在時刻（datetime）
+        :return: 通知すべきならTrue
+        """
+        if not self.notification['enabled']:
+            return False
+
+        # 曜日の確認
+        weekday_map = {0: '月', 1: '火', 2: '水', 3: '木', 4: '金', 5: '土', 6: '日'}
+        current_weekday = weekday_map[current_time.weekday()]
+        if current_weekday not in self.notification['days']:
+            return False
+
+        # 時刻の確認
+        if current_time.hour < self.notification['hour']:
+            return False
+
+        # 今日の通知予定時刻
+        today_notification_time = current_time.replace(
+            hour=self.notification['hour'],
+            minute=0,
+            second=0,
+            microsecond=0
+        )
+
+        # last_notified_atの確認
+        last_notified = self.notification.get('last_notified_at')
+        if last_notified:
+            last_notified_time = datetime.strptime(last_notified, self.date_format)
+            if last_notified_time >= today_notification_time:
+                return False
+
+        return True
