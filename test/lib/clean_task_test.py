@@ -49,3 +49,64 @@ def test_get_todo_tasks_sorted_by_elapsed_days():
     assert sorted_tasks[0]['task_name'] == 'task_10days'
     assert sorted_tasks[1]['task_name'] == 'task_5days'
     assert sorted_tasks[2]['task_name'] == 'task_3days'
+
+
+def test_get_notification_settings_default():
+    """通知設定がない場合はデフォルト値を返す"""
+    task_json = json.dumps({"tasks": []})
+    clean_task = CleanTask(task_json)
+    settings = clean_task.get_notification_settings()
+    assert settings['enabled'] == False
+    assert settings['days'] == []
+    assert settings['hour'] == 10
+    assert settings['last_notified_at'] is None
+
+
+def test_get_notification_settings_with_existing():
+    """既存の通知設定を読み込める"""
+    task_json = json.dumps({
+        "tasks": [],
+        "notification": {
+            "enabled": True,
+            "days": ["月", "水", "金"],
+            "hour": 7,
+            "last_notified_at": "2026-01-31 07:05:00"
+        }
+    })
+    clean_task = CleanTask(task_json)
+    settings = clean_task.get_notification_settings()
+    assert settings['enabled'] == True
+    assert settings['days'] == ["月", "水", "金"]
+    assert settings['hour'] == 7
+    assert settings['last_notified_at'] == "2026-01-31 07:05:00"
+
+
+def test_get_json_includes_notification():
+    """get_jsonが通知設定を含んで返す"""
+    task_json = json.dumps({
+        "tasks": [],
+        "notification": {
+            "enabled": True,
+            "days": ["土"],
+            "hour": 9,
+            "last_notified_at": None
+        }
+    })
+    clean_task = CleanTask(task_json)
+    result = json.loads(clean_task.get_json())
+    assert 'notification' in result
+    assert result['notification']['enabled'] == True
+    assert result['notification']['days'] == ["土"]
+    assert result['notification']['hour'] == 9
+
+
+def test_get_json_includes_default_notification():
+    """get_jsonがデフォルト通知設定を含んで返す"""
+    task_json = json.dumps({"tasks": []})
+    clean_task = CleanTask(task_json)
+    result = json.loads(clean_task.get_json())
+    assert 'notification' in result
+    assert result['notification']['enabled'] == False
+    assert result['notification']['days'] == []
+    assert result['notification']['hour'] == 10
+    assert result['notification']['last_notified_at'] is None

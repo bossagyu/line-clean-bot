@@ -3,11 +3,33 @@ from datetime import datetime, timedelta
 
 
 class CleanTask(object):
+    DEFAULT_NOTIFICATION = {
+        'enabled': False,
+        'days': [],
+        'hour': 10,
+        'last_notified_at': None
+    }
+
     def __init__(self, task_json):
         task_data = json.loads(task_json)
         self.tasks = task_data['tasks']
+        self.notification = self._load_notification(task_data.get('notification'))
         self.date_format = "%Y-%m-%d %H:%M:%S"
         self.now = datetime.now() + timedelta(hours=9)
+
+    def _load_notification(self, notification_data):
+        """Load notification settings with defaults for missing fields
+        :param notification_data: notification data from JSON or None
+        :return: notification settings dict
+        """
+        if notification_data is None:
+            return {**self.DEFAULT_NOTIFICATION}
+        return {
+            'enabled': notification_data.get('enabled', self.DEFAULT_NOTIFICATION['enabled']),
+            'days': notification_data.get('days', self.DEFAULT_NOTIFICATION['days']),
+            'hour': notification_data.get('hour', self.DEFAULT_NOTIFICATION['hour']),
+            'last_notified_at': notification_data.get('last_notified_at', self.DEFAULT_NOTIFICATION['last_notified_at'])
+        }
 
     def __evaluate_cleanup_timing(self, task):
         """Evaluate cleanup timing
@@ -60,11 +82,20 @@ class CleanTask(object):
                 task['updated_at'] = self.now.strftime(self.date_format)
                 break
 
+    def get_notification_settings(self):
+        """Get notification settings
+        :return: notification settings dict
+        """
+        return {**self.notification}
+
     def get_json(self):
         """Get json string
         :return: json string
         """
-        task_data = {'tasks': self.tasks}
+        task_data = {
+            'tasks': self.tasks,
+            'notification': self.notification
+        }
         return json.dumps(task_data)
 
     def add_task(self, task_name, duration):
