@@ -13,8 +13,8 @@ Parameters:
     Description: S3 bucket name for task data
   ScheduleExpression:
     Type: String
-    Default: cron(0 1 ? * SAT *)
-    Description: "Schedule for periodic push (default: Saturday at 10:00 JST)"
+    Default: cron(0 * * * ? *)
+    Description: "Schedule for periodic push (default: every hour)"
 
 Globals:
   Function:
@@ -52,7 +52,7 @@ Resources:
       Handler: line_clean_bot.push_message_periodically
       CodeUri: .
       Policies:
-        - S3ReadPolicy:
+        - S3CrudPolicy:
             BucketName: !Ref BucketName
       Events:
         ScheduleEvent:
