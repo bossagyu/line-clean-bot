@@ -219,3 +219,20 @@ def test_should_notify_returns_false_when_already_notified_today():
     # 今日の8時だが、7:05に通知済み
     test_time = datetime(2026, 1, 31, 8, 0, 0)
     assert clean_task.should_notify(test_time) == False
+
+
+def test_update_last_notified():
+    """last_notified_atを更新できる"""
+    task_json = json.dumps({
+        "tasks": [],
+        "notification": {
+            "enabled": True,
+            "days": ["土"],
+            "hour": 7,
+            "last_notified_at": None
+        }
+    })
+    clean_task = CleanTask(task_json)
+    clean_task.update_last_notified()
+    settings = clean_task.get_notification_settings()
+    assert settings['last_notified_at'] is not None

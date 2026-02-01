@@ -176,3 +176,10 @@ class CleanTask(object):
                 return False
 
         return True
+
+    def update_last_notified(self):
+        """last_notified_atを現在時刻で更新する"""
+        self.notification = {
+            **self.notification,
+            'last_notified_at': self.now.strftime(self.date_format)
+        }
