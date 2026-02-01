@@ -7,7 +7,7 @@ resolve_s3 = true
 s3_prefix = "line-clean-bot"
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
-parameter_overrides = "BucketName=bossagyu-lambda-line-clean-bot"
+parameter_overrides = "BucketName=bossagyu-lambda-line-clean-bot ScheduleExpression='cron(0 * * * ? *)'"
 
 [default.build.parameters]
 cached = true
