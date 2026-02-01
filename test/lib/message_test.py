@@ -53,3 +53,29 @@ def test_periodically_push_message_shows_overdue_days(message_instance):
     # 超過日数がカッコで表示される（例: task1 (+N日)）
     assert '(+' in result
     assert '日)' in result
+
+
+def test_notification_settings_command(message_instance, mock_s3client):
+    """通知設定コマンドで曜日と時間を設定できる"""
+    result = message_instance.get_return_message('通知設定 月水金 7', mock_s3client)
+    assert '通知設定を更新しました' in result
+    assert '月水金' in result
+    assert '7時' in result
+
+
+def test_notification_stop_command(message_instance, mock_s3client):
+    """通知停止コマンドで通知をOFFにできる"""
+    result = message_instance.get_return_message('通知停止', mock_s3client)
+    assert '通知を停止しました' in result
+
+
+def test_notification_start_command(message_instance, mock_s3client):
+    """通知開始コマンドで通知をONにできる"""
+    result = message_instance.get_return_message('通知開始', mock_s3client)
+    assert '通知を開始しました' in result
+
+
+def test_notification_check_command(message_instance, mock_s3client):
+    """通知確認コマンドで現在の設定を表示できる"""
+    result = message_instance.get_return_message('通知確認', mock_s3client)
+    assert '通知設定' in result

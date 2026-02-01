@@ -65,6 +65,30 @@ class Message:
         if task_operation == '残り':
             return self.get_periodically_push_message()
 
+        # 通知設定コマンド
+        if task_operation == '通知設定':
+            days = self.__get_task_name(message)
+            hour = self.__get_duration(message)
+            if not days or not hour:
+                return '通知設定の形式が正しくありません。\n例: 通知設定 月水金 7'
+            days_list = list(days)
+            self.clean_task.set_notification_settings(days_list, hour)
+            s3client.update_object(self.object_keyname, self.clean_task.get_json())
+            return f'通知設定を更新しました。\n曜日: {"".join(days_list)}\n時間: {hour}時'
+
+        if task_operation == '通知停止':
+            self.clean_task.set_notification_enabled(False)
+            s3client.update_object(self.object_keyname, self.clean_task.get_json())
+            return '通知を停止しました。'
+
+        if task_operation == '通知開始':
+            self.clean_task.set_notification_enabled(True)
+            s3client.update_object(self.object_keyname, self.clean_task.get_json())
+            return '通知を開始しました。'
+
+        if task_operation == '通知確認':
+            return self.__get_notification_check_message()
+
         # コマンドが認識されなかった場合
         return 'コマンドを認識できませんでした。「使い方」と入力してください。'
 
@@ -94,6 +118,13 @@ class Message:
             overdue_days = elapsed_days - int(task['duration'])
             push_message += f"{task['task_name']} (+{overdue_days}日)\n"
         return push_message
+
+    def __get_notification_check_message(self):
+        """通知設定の確認メッセージを返却する関数"""
+        settings = self.clean_task.get_notification_settings()
+        enabled_str = 'ON' if settings['enabled'] else 'OFF'
+        days_str = ''.join(settings['days']) if settings['days'] else '未設定'
+        return f'通知設定\n状態: {enabled_str}\n曜日: {days_str}\n時間: {settings["hour"]}時'
 
     def __get_usage_message(self):
         """使用方法を返却する関数"""
